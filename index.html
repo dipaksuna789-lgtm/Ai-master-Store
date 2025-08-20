@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI MASTER 2.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(45deg, #4c68d7, #6a82fb);
+            --text-color: #333;
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --green-color: #28a745;
+            --blue-color: #007bff;
+        }
+        body { font-family: 'Roboto', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); }
+        .container { padding: 15px; }
+        .toolbar { display: flex; align-items: center; background: var(--primary-gradient); padding: 12px 18px; box-shadow: 0 4px 10px rgba(76, 104, 215, 0.3); }
+        .toolbar img { width: 40px; height: 40px; margin-right: 15px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2)); }
+        .toolbar h1 { font-family: 'Poppins', sans-serif; font-size: 1.6em; margin: 0; color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+        .search-bar { margin: 15px; }
+        .search-bar input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1em; box-sizing: border-box; }
+        
+        .grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-item { background-color: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); cursor: pointer; overflow: hidden; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .grid-item:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+        .grid-item img { width: 100%; height: 120px; object-fit: cover; background-color: #eee; }
+        .grid-item .content { padding: 10px; }
+        .grid-item .title { font-weight: 500; font-size: 1.1em; margin: 0 0 8px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .item-footer { display: flex; justify-content: space-between; align-items: center; }
+        .item-price-details { display: flex; align-items: center; gap: 8px; }
+        .item-price-details .price { font-size: 1.2em; font-weight: 700; }
+        .item-price-details .label-inline { background-color: var(--green-color); color: white; padding: 3px 6px; border-radius: 5px; font-size: 0.7em; font-weight: bold; }
+        .item-like-container { display: flex; align-items: center; gap: 4px; font-size: 0.9em; color: #666; cursor: pointer; }
+        .item-like-container .like-icon { font-size: 1.4em; color: #ff4d4d; }
+        
+        #detailsScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); overflow-y: auto; z-index: 100; }
+        .details-header { display: flex; align-items: center; padding: 12px 18px; background: var(--primary-gradient); box-shadow: 0 4px 10px rgba(76, 104, 215, 0.3); }
+        .back-icon { font-size: 24px; cursor: pointer; font-weight: bold; color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+        .horizontal-gallery-container { padding: 20px 0; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .horizontal-gallery-container::-webkit-scrollbar { display: none; }
+        .gallery-item { display: inline-block; width: 55%; aspect-ratio: 9 / 16; margin-left: 15px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .gallery-item:last-child { margin-right: 15px; }
+        .gallery-image { width: 100%; height: 100%; object-fit: cover; }
+        .details-content-wrapper { padding: 15px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .section-header h2 { font-size: 1.2em; margin: 0; }
+        .details-info-card { background-color: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: var(--shadow); }
+        .details-title { font-family: 'Roboto', sans-serif; font-size: 2em; font-weight: 700; margin: 0 0 15px 0; }
+        .price-like-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .price-tag { display: flex; align-items: center; gap: 10px; font-size: 1.8em; font-weight: 700; }
+        .price-tag .label { background-color: var(--green-color); color: white; font-size: 0.5em; padding: 6px 10px; border-radius: 5px; font-weight: bold; }
+        .like-container { text-align: center; }
+        .details-like-icon { font-size: 28px; color: #ff4d4d; cursor: pointer; }
+        .like-count { font-size: 0.9em; color: #666; }
+        .details-description { line-height: 1.6; margin-bottom: 20px; }
+        .download-container { background-color: #e9f5ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
+        .download-link { background-color: var(--blue-color); color: white; padding: 12px 20px; border-radius: 5px; text-decoration: none; font-weight: 500; display: inline-block; }
+        .buy-now-btn { width: 100%; padding: 15px; background-color: var(--green-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.2em; font-weight: bold; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .modal-content h2 { font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 1.5em; margin-top: 0; margin-bottom: 25px; }
+        .modal-content input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; margin-bottom: 15px; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+        .modal-buttons button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 1em; cursor: pointer; font-weight: 500; }
+        .btn-submit { background-color: var(--blue-color); color: white; }
+        .btn-cancel { background-color: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <div id="main-ui">
+        <div class="toolbar"><img src="Master.Png" alt="Icon"><h1>AI MASTER 2.0</h1></div>
+        <div class="container">
+            <div class="search-bar"><input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Search..."></div>
+            <div class="grid-view" id="productGrid"></div>
+        </div>
+    </div>
+    <div id="detailsScreen"></div>
+    <div id="buyNowModal" class="modal"></div>
+    <div id="dialogBox" class="modal"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyC3KRKS9zXXHfVJnYdZSM_prdcxvfN0gL8", authDomain: "aimaster-7ffaf.firebaseapp.com", databaseURL: "https://aimaster-7ffaf-default-rtdb.firebaseio.com", projectId: "aimaster-7ffaf", storageBucket: "aimaster-7ffaf.firebasestorage.app", messagingSenderId: "963488826729", appId: "1:963488826729:web:0c690774cd50209d33a9f8" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        let allProducts = [], currentProduct = null;
+        
+        const productsRef = db.ref('products');
+        productsRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            allProducts = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+            renderProducts(allProducts);
+        });
+        
+        function renderProducts(products) {
+            const grid = document.getElementById("productGrid");
+            if (!grid) return;
+            grid.innerHTML = "";
+            if (!products || products.length === 0) { 
+                grid.innerHTML = "<p>No products found.</p>"; 
+                return; 
+            }
+            
+            const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
+
+            products.forEach(p => {
+                if (!p.coverImage || !p.title) return;
+                
+                const isLiked = likedProducts.includes(p.id);
+                const likeIcon = isLiked ? '&#10084;' : '&#9825;';
+                const likesCount = p.likes || 0;
+
+                grid.innerHTML += `
+                    <div class="grid-item" onclick="showDetails('${p.id}')">
+                        <img src="${p.coverImage}" alt="${p.title}">
+                        <div class="content">
+                            <div class="title">${p.title}</div>
+                            <div class="item-footer">
+                                <div class="item-price-details">
+                                    <span class="price">₹${p.price||0}</span>
+                                    ${p.label ? `<span class="label-inline">${p.label}</span>` : ''}
+                                </div>
+                                <div class="item-like-container" onclick="toggleLikeFromGrid(event, '${p.id}')">
+                                    <span class="like-icon" id="like-icon-${p.id}">${likeIcon}</span>
+                                    <span class="like-count" id="like-count-${p.id}">${likesCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function toggleLikeFromGrid(event, productId) {
+            event.stopPropagation();
+
+            const likedProducts = JSON.parse(localStorage.getItem("likedProducts")) || [];
+            const productRef = db.ref(`products/${productId}/likes`);
+            
+            const iconEl = document.getElementById(`like-icon-${productId}`);
+            const countEl = document.getElementById(`like-count-${productId}`);
+            let currentLikes = parseInt(countEl.innerText) || 0;
+            
+            const isLiking = !likedProducts.includes(productId);
+
+            productRef.set(firebase.database.ServerValue.increment(isLiking ? 1 : -1));
+            
+            if (isLiking) {
+                likedProducts.push(productId);
+                iconEl.innerHTML = "&#10084;";
+                countEl.innerText = currentLikes + 1;
+            } else {
+                likedProducts.splice(likedProducts.indexOf(productId), 1);
+                iconEl.innerHTML = "&#9825;";
+                countEl.innerText = currentLikes > 0 ? currentLikes - 1 : 0;
+            }
+            localStorage.setItem("likedProducts", JSON.stringify(likedProducts));
+        }
+
+        function searchProducts() {
+            const filter = document.getElementById('searchInput').value.toUpperCase();
+            const filteredProducts = allProducts.filter(p => p.title && p.title.toUpperCase().includes(filter));
+            renderProducts(filteredProducts);
+        }
+        
+        function showDetails(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) return;
+            currentProduct = product;
+
+            const imageUrls = new Set();
+            if (product.coverImage && typeof product.coverImage === 'string' && product.coverImage.trim()) { imageUrls.add(product.coverImage.trim()); }
+            if (product.images && typeof product.images === 'object') {
+                Object.values(product.images).forEach(url => { if (url && typeof url === 'string' && url.trim()) { imageUrls.add(url.trim()); } });
+            }
+            let allImages = Array.from(imageUrls);
+            if (allImages.length === 0) { allImages.push('https://via.placeholder.com/300x533.png?text=Image+Not+Found'); }
+            
+            let galleryItemsHtml = '';
+            allImages.forEach(url => {
+                galleryItemsHtml += `<div class="gallery-item"><img class="gallery-image" src="${url}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x533.png?text=Image+Not+Found';"></div>`;
+            });
+            
+            const liked = (JSON.parse(localStorage.getItem('likedProducts')) || []).includes(productId);
+            const likes = product.likes || 0;
+            
+            document.getElementById("detailsScreen").innerHTML = `
+                <div class="details-header"><div class="back-icon" onclick="goBack()">&#8592;</div></div>
+                <div class="horizontal-gallery-container">${galleryItemsHtml}</div>
+                <div class="details-content-wrapper">
+                    <div class="section-header"><h2>About this product</h2></div>
+                    <div class="details-info-card">
+                        <div class="details-title">${product.title}</div>
+                        <div class="price-like-row">
+                            <div class="price-tag">₹${product.price||0} <span class="label">${product.label||''}</span></div>
+                            <div class="like-container">
+                                <div class="details-like-icon" id="likeIcon" onclick="toggleLike('${product.id}')">${liked?'&#10084;':'&#9825;'}</div>
+                                <div class="like-count" id="likeCount">${likes} likes</div>
+                            </div>
+                        </div>
+                        <p class="details-description">${product.description||''}</p>
+                        ${product.downloadableFile ? `<div class="download-container"><a href="${product.downloadableFile}" class="download-link" download>Download File</a></div>` : ''}
+                        ${product.price > 0 ? `<button class="buy-now-btn" onclick="showBuyNow()">Buy Now</button>` : ''}
+                    </div>
+                </div>`;
+            document.getElementById("main-ui").style.display = "none";
+            document.getElementById("detailsScreen").style.display = "block";
+        }
+        
+        function showBuyNow() {
+            const modal = document.getElementById('buyNowModal');
+            modal.innerHTML = `<div class="modal-content"><h2>Enter Your Details</h2><input type="email" id="userEmail" placeholder="Email ID" required><input type="tel" id="userMobile" placeholder="Mobile Number" required><div class="modal-buttons"><button class="btn-submit" onclick="submitOrder()">Submit</button><button class="btn-cancel" onclick="closeModal('buyNowModal')">Cancel</button></div></div>`;
+            modal.style.display = 'flex';
+        }
+        
+        function toggleLike(productId) {
+            // This function is for the details page like button
+            // It's separate from toggleLikeFromGrid
+            const likedProducts = JSON.parse(localStorage.getItem("likedProducts")) || [];
+            const productRef = db.ref(`products/${productId}/likes`);
+            const iconEl = document.getElementById("likeIcon");
+            const countEl = document.getElementById("likeCount");
+            let currentLikes = parseInt(countEl.innerText) || 0;
+            
+            const isLiking = !likedProducts.includes(productId);
+
+            productRef.set(firebase.database.ServerValue.increment(isLiking ? 1 : -1));
+
+            if (isLiking) {
+                likedProducts.push(productId);
+                iconEl.innerHTML = "&#10084;";
+                countEl.innerText = `${currentLikes + 1} likes`;
+            } else {
+                likedProducts.splice(likedProducts.indexOf(productId), 1);
+                iconEl.innerHTML = "&#9825;";
+                countEl.innerText = `${currentLikes > 0 ? currentLikes - 1 : 0} likes`;
+            }
+            localStorage.setItem("likedProducts", JSON.stringify(likedProducts));
+        }
+
+        function goBack(){
+            document.getElementById("detailsScreen").style.display="none";
+            document.getElementById("main-ui").style.display="block";
+            renderProducts(allProducts); // Re-render main page to show updated like counts
+        }
+
+        function submitOrder(){
+            const email=document.getElementById("userEmail").value;
+            const mobile=document.getElementById("userMobile").value;
+            if(!email||!mobile){ return alert("Please fill all details."); }
+            db.ref("orders").push({
+                productId:currentProduct.id,
+                productTitle:currentProduct.title,
+                productCoverImage:currentProduct.coverImage,
+                price:currentProduct.price,
+                userEmail:email,
+                userMobile:mobile,
+                timestamp:firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                closeModal("buyNowModal");
+                const dialog=document.getElementById("dialogBox");
+                dialog.innerHTML=`<div class="modal-content"><h2>Success!</h2><p>Thank you for your purchase!<br><br>Main aap se jald hi aapke email ID ya WhatsApp number ke through contact karunga.</p><button class="btn-submit" onclick="closeDialog()">OK</button></div>`;
+                dialog.style.display="flex";
+            }).catch((e=>alert(e.message)));
+        }
+
+        function closeModal(modalId){
+            document.getElementById(modalId).style.display="none";
+        }
+
+        function closeDialog(){
+            closeModal("dialogBox");
+            goBack();
+        }
+        
+        const allFunctions={showDetails,searchProducts,goBack,toggleLike,showBuyNow,submitOrder,closeModal,closeDialog,toggleLikeFromGrid};
+        for(const funcName in allFunctions){window[funcName]=allFunctions[funcName];}
+    </script>
+</body>
+</html>
