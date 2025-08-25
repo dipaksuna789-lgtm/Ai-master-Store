@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Razorpay Script Yahan Add Kar Di Gayi Hai -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         :root {
             --primary-gradient: linear-gradient(45deg, #4c68d7, #6a82fb);
@@ -88,7 +90,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        // --- JAVASCRIPT IS 100% UNCHANGED AND WORKING ---
+        // --- JAVASCRIPT SECTION ---
         const firebaseConfig = { apiKey: "AIzaSyC3KRKS9zXXHfVJnYdZSM_prdcxvfN0gL8", authDomain: "aimaster-7ffaf.firebaseapp.com", databaseURL: "https://aimaster-7ffaf-default-rtdb.firebaseio.com", projectId: "aimaster-7ffaf", storageBucket: "aimaster-7ffaf.firebasestorage.app", messagingSenderId: "963488826729", appId: "1:963488826729:web:0c690774cd50209d33a9f8" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -142,18 +144,13 @@
 
         function toggleLikeFromGrid(event, productId) {
             event.stopPropagation();
-
             const likedProducts = JSON.parse(localStorage.getItem("likedProducts")) || [];
             const productRef = db.ref(`products/${productId}/likes`);
-            
             const iconEl = document.getElementById(`like-icon-${productId}`);
             const countEl = document.getElementById(`like-count-${productId}`);
             let currentLikes = parseInt(countEl.innerText) || 0;
-            
             const isLiking = !likedProducts.includes(productId);
-
             productRef.set(firebase.database.ServerValue.increment(isLiking ? 1 : -1));
-            
             if (isLiking) {
                 likedProducts.push(productId);
                 iconEl.innerHTML = "&#10084;";
@@ -176,7 +173,6 @@
             const product = allProducts.find(p => p.id === productId);
             if (!product) return;
             currentProduct = product;
-
             const imageUrls = new Set();
             if (product.coverImage && typeof product.coverImage === 'string' && product.coverImage.trim()) { imageUrls.add(product.coverImage.trim()); }
             if (product.images && typeof product.images === 'object') {
@@ -184,15 +180,12 @@
             }
             let allImages = Array.from(imageUrls);
             if (allImages.length === 0) { allImages.push('https://via.placeholder.com/300x533.png?text=Image+Not+Found'); }
-            
             let galleryItemsHtml = '';
             allImages.forEach(url => {
                 galleryItemsHtml += `<div class="gallery-item"><img class="gallery-image" src="${url}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x533.png?text=Image+Not+Found';"></div>`;
             });
-            
             const liked = (JSON.parse(localStorage.getItem('likedProducts')) || []).includes(productId);
             const likes = product.likes || 0;
-            
             document.getElementById("detailsScreen").innerHTML = `
                 <div class="details-header"><div class="back-icon" onclick="goBack()">&#8592;</div></div>
                 <div class="horizontal-gallery-container">${galleryItemsHtml}</div>
@@ -218,7 +211,7 @@
         
         function showBuyNow() {
             const modal = document.getElementById('buyNowModal');
-            modal.innerHTML = `<div class="modal-content"><h2>Enter Your Details</h2><input type="email" id="userEmail" placeholder="Email ID" required><input type="tel" id="userMobile" placeholder="Mobile Number" required><div class="modal-buttons"><button class="btn-submit" onclick="submitOrder()">Submit</button><button class="btn-cancel" onclick="closeModal('buyNowModal')">Cancel</button></div></div>`;
+            modal.innerHTML = `<div class="modal-content"><h2>Enter Your Details</h2><input type="email" id="userEmail" placeholder="Email ID" required><input type="tel" id="userMobile" placeholder="Mobile Number" required><div class="modal-buttons"><button class="btn-submit" onclick="submitOrder()">Submit & Pay</button><button class="btn-cancel" onclick="closeModal('buyNowModal')">Cancel</button></div></div>`;
             modal.style.display = 'flex';
         }
         
@@ -228,11 +221,8 @@
             const iconEl = document.getElementById("likeIcon");
             const countEl = document.getElementById("likeCount");
             let currentLikes = parseInt(countEl.innerText) || 0;
-            
             const isLiking = !likedProducts.includes(productId);
-
             productRef.set(firebase.database.ServerValue.increment(isLiking ? 1 : -1));
-
             if (isLiking) {
                 likedProducts.push(productId);
                 iconEl.innerHTML = "&#10084;";
@@ -251,24 +241,59 @@
             renderProducts(allProducts);
         }
 
-        function submitOrder(){
-            const email=document.getElementById("userEmail").value;
-            const mobile=document.getElementById("userMobile").value;
-            if(!email||!mobile){ return alert("Please fill all details."); }
-            db.ref("orders").push({
-                productId:currentProduct.id,
-                productTitle:currentProduct.title,
-                productCoverImage:currentProduct.coverImage,
-                price:currentProduct.price,
-                userEmail:email,
-                userMobile:mobile,
-                timestamp:firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                closeModal("buyNowModal");
-                const dialog=document.getElementById("dialogBox");
-                dialog.innerHTML=`<div class="modal-content"><h2>Success!</h2><p>Thank you for your purchase!<br><br>Main aap se jald hi aapke email ID ya WhatsApp number ke through contact karunga.</p><button class="btn-submit" onclick="closeDialog()">OK</button></div>`;
-                dialog.style.display="flex";
-            }).catch((e=>alert(e.message)));
+        // --- UPDATED SUBMITORDER FUNCTION ---
+        function submitOrder() {
+            const email = document.getElementById("userEmail").value;
+            const mobile = document.getElementById("userMobile").value;
+            if (!email || !mobile) {
+                return alert("Please fill all details.");
+            }
+
+            var options = {
+                "key": "rzp_live_wygJUJh3ZbUEUX", // Aapki Key ID
+                "amount": currentProduct.price * 100, // Amount in paise
+                "currency": "INR",
+                "name": "AI MASTER 2.0",
+                "description": "Payment for " + currentProduct.title,
+                "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiFnLyOzDs8gngq68zI1_8u7SO4mfC9px6iu7PVw80j34_fn6nDMACws-JUTukEFycCzDtK8SX6re_Sm9glmmpSxHQTRFN-ErgTBRCpY-v1U77FgSv358Etg2sMa5wCyVRIpvAIpMisHyIm82ZWO8uNdOHyl6h41qz3QTirAA-aabErONcKxxUOvYDZRvE/s850/1000166545.png",
+                
+                "handler": function (response) {
+                    db.ref("orders").push({
+                        productId: currentProduct.id,
+                        productTitle: currentProduct.title,
+                        productCoverImage: currentProduct.coverImage,
+                        price: currentProduct.price,
+                        userEmail: email,
+                        userMobile: mobile,
+                        paymentId: response.razorpay_payment_id,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    }).then(() => {
+                        closeModal("buyNowModal");
+                        const dialog = document.getElementById("dialogBox");
+                        dialog.innerHTML = `<div class="modal-content">
+                                                <h2>Payment Successful!</h2>
+                                                <p>Thank you for your purchase! Aapka download link neeche hai:</p>
+                                                <a href="${currentProduct.downloadableFile}" class="download-link" target="_blank" download>Download Now</a>
+                                                <br><br>
+                                                <button class="btn-submit" onclick="closeDialog()">OK</button>
+                                            </div>`;
+                        dialog.style.display = "flex";
+                    }).catch((e => alert(e.message)));
+                },
+                "prefill": {
+                    "email": email,
+                    "contact": mobile
+                },
+                "theme": {
+                    "color": "#4c68d7"
+                }
+            };
+
+            var rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response){
+                alert("Payment failed: " + response.error.description);
+            });
+            rzp1.open();
         }
 
         function closeModal(modalId){
