@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Razorpay Script Yahan Add Kar Di Gayi Hai -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         :root {
@@ -90,7 +89,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        // --- JAVASCRIPT SECTION ---
         const firebaseConfig = { apiKey: "AIzaSyC3KRKS9zXXHfVJnYdZSM_prdcxvfN0gL8", authDomain: "aimaster-7ffaf.firebaseapp.com", databaseURL: "https://aimaster-7ffaf-default-rtdb.firebaseio.com", projectId: "aimaster-7ffaf", storageBucket: "aimaster-7ffaf.firebasestorage.app", messagingSenderId: "963488826729", appId: "1:963488826729:web:0c690774cd50209d33a9f8" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -112,16 +110,12 @@
                 grid.innerHTML = "<p>No products found.</p>"; 
                 return; 
             }
-            
             const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
-
             products.forEach(p => {
                 if (!p.coverImage || !p.title) return;
-                
                 const isLiked = likedProducts.includes(p.id);
                 const likeIcon = isLiked ? '&#10084;' : '&#9825;';
                 const likesCount = p.likes || 0;
-
                 grid.innerHTML += `
                     <div class="grid-item" onclick="showDetails('${p.id}')">
                         <img src="${p.coverImage}" alt="${p.title}">
@@ -169,10 +163,13 @@
             renderProducts(filteredProducts);
         }
         
+        // --- UPDATED showDetails FUNCTION ---
         function showDetails(productId) {
             const product = allProducts.find(p => p.id === productId);
             if (!product) return;
             currentProduct = product;
+
+            // Gallery images logic (unchanged)
             const imageUrls = new Set();
             if (product.coverImage && typeof product.coverImage === 'string' && product.coverImage.trim()) { imageUrls.add(product.coverImage.trim()); }
             if (product.images && typeof product.images === 'object') {
@@ -184,8 +181,24 @@
             allImages.forEach(url => {
                 galleryItemsHtml += `<div class="gallery-item"><img class="gallery-image" src="${url}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x533.png?text=Image+Not+Found';"></div>`;
             });
+            
             const liked = (JSON.parse(localStorage.getItem('likedProducts')) || []).includes(productId);
             const likes = product.likes || 0;
+            
+            // --- NEW BUTTON LOGIC STARTS HERE ---
+            let actionButtonsHtml = '';
+            // If price is greater than 0, show Buy Now button
+            if (product.price > 0) {
+                actionButtonsHtml = `<button class="buy-now-btn" onclick="showBuyNow()">Buy Now</button>`;
+            } 
+            // Else (if price is 0 or not defined), show Download File button (only if link exists)
+            else if (product.downloadableFile) {
+                actionButtonsHtml = `<div class="download-container">
+                                        <a href="${product.downloadableFile}" class="download-link" download>Download File</a>
+                                     </div>`;
+            }
+            // --- NEW BUTTON LOGIC ENDS HERE ---
+
             document.getElementById("detailsScreen").innerHTML = `
                 <div class="details-header"><div class="back-icon" onclick="goBack()">&#8592;</div></div>
                 <div class="horizontal-gallery-container">${galleryItemsHtml}</div>
@@ -201,8 +214,10 @@
                             </div>
                         </div>
                         <p class="details-description">${product.description||''}</p>
-                        ${product.downloadableFile ? `<div class="download-container"><a href="${product.downloadableFile}" class="download-link" download>Download File</a></div>` : ''}
-                        ${product.price > 0 ? `<button class="buy-now-btn" onclick="showBuyNow()">Buy Now</button>` : ''}
+                        
+                        <!-- The corrected buttons will be displayed here -->
+                        ${actionButtonsHtml}
+
                     </div>
                 </div>`;
             document.getElementById("main-ui").style.display = "none";
@@ -241,22 +256,19 @@
             renderProducts(allProducts);
         }
 
-        // --- UPDATED SUBMITORDER FUNCTION ---
         function submitOrder() {
             const email = document.getElementById("userEmail").value;
             const mobile = document.getElementById("userMobile").value;
             if (!email || !mobile) {
                 return alert("Please fill all details.");
             }
-
             var options = {
-                "key": "rzp_live_wygJUJh3ZbUEUX", // Aapki Key ID
-                "amount": currentProduct.price * 100, // Amount in paise
+                "key": "rzp_live_wygJUJh3ZbUEUX",
+                "amount": currentProduct.price * 100,
                 "currency": "INR",
                 "name": "AI MASTER 2.0",
                 "description": "Payment for " + currentProduct.title,
                 "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiFnLyOzDs8gngq68zI1_8u7SO4mfC9px6iu7PVw80j34_fn6nDMACws-JUTukEFycCzDtK8SX6re_Sm9glmmpSxHQTRFN-ErgTBRCpY-v1U77FgSv358Etg2sMa5wCyVRIpvAIpMisHyIm82ZWO8uNdOHyl6h41qz3QTirAA-aabErONcKxxUOvYDZRvE/s850/1000166545.png",
-                
                 "handler": function (response) {
                     db.ref("orders").push({
                         productId: currentProduct.id,
@@ -288,7 +300,6 @@
                     "color": "#4c68d7"
                 }
             };
-
             var rzp1 = new Razorpay(options);
             rzp1.on('payment.failed', function (response){
                 alert("Payment failed: " + response.error.description);
