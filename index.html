@@ -29,31 +29,15 @@
         .search-bar input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1em; box-sizing: border-box; }
         .grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
-        /* --- ANIMATION STYLES START --- */
         @keyframes itemLoadAnimation {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .grid-item { 
-            background-color: var(--card-bg); 
-            border-radius: 12px; 
-            box-shadow: var(--shadow); 
-            cursor: pointer; 
-            overflow: hidden; 
-            position: relative; 
+            background-color: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); cursor: pointer; overflow: hidden; position: relative; 
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            
-            /* Animation Properties */
-            opacity: 0; /* Start hidden */
-            animation: itemLoadAnimation 0.5s ease-out forwards;
+            opacity: 0; animation: itemLoadAnimation 0.5s ease-out forwards;
         }
-        /* --- ANIMATION STYLES END --- */
 
         .grid-item:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
         .grid-item img { width: 100%; height: 120px; object-fit: cover; background-color: #eee; }
@@ -96,7 +80,13 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 400; justify-content: center; align-items: center; }
         .modal-content { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
         .modal-content h2 { font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 1.5em; margin-top: 0; margin-bottom: 25px; }
-        .modal-content input, .form-group select, .form-group textarea, .form-group input { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; }
+        
+        /* --- UPDATED RULE --- */
+        .modal-content input, .form-group select, .form-group textarea, .form-group input { 
+            width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; 
+            margin-bottom: 15px; /* This adds space below each input */
+        }
+        
         .modal-buttons { display: flex; gap: 10px; justify-content: center; }
         .modal-buttons button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 1em; cursor: pointer; font-weight: 500; }
         .btn-submit { background-color: var(--blue-color); color: white; }
@@ -224,25 +214,11 @@
             grid.innerHTML = "";
             if (!products || products.length === 0) { grid.innerHTML = "<p>No products found.</p>"; return; }
             const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
-            products.forEach((p, index) => { // Added index for animation delay
+            products.forEach((p, index) => {
                 if (!p.coverImage || !p.title) return;
                 const isLiked = likedProducts.includes(p.id);
                 const likeIcon = isLiked ? '&#10084;' : '&#9825;';
-                // --- UPDATE: Added inline style for animation-delay ---
-                grid.innerHTML += `
-                    <div class="grid-item" onclick="showDetails('${p.id}')" style="animation-delay: ${index * 50}ms">
-                        <img src="${p.coverImage}" alt="${p.title}">
-                        <div class="content">
-                            <div class="title">${p.title}</div>
-                            <div class="item-footer">
-                                <div class="item-price-details"><span class="price">₹${p.price||0}</span>${p.label ? `<span class="label-inline">${p.label}</span>` : ''}</div>
-                                <div class="item-like-container" onclick="toggleLikeFromGrid(event, '${p.id}')">
-                                    <span class="like-icon" id="like-icon-${p.id}">${likeIcon}</span>
-                                    <span id="like-count-${p.id}">${p.likes || 0}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
+                grid.innerHTML += `<div class="grid-item" onclick="showDetails('${p.id}')" style="animation-delay: ${index * 50}ms"><img src="${p.coverImage}" alt="${p.title}"><div class="content"><div class="title">${p.title}</div><div class="item-footer"><div class="item-price-details"><span class="price">₹${p.price||0}</span>${p.label ? `<span class="label-inline">${p.label}</span>` : ''}</div><div class="item-like-container" onclick="toggleLikeFromGrid(event, '${p.id}')"><span class="like-icon" id="like-icon-${p.id}">${likeIcon}</span><span id="like-count-${p.id}">${p.likes || 0}</span></div></div></div></div>`;
             });
         }
 
@@ -300,19 +276,13 @@
             userOrders.forEach(order => downloadableProductIds.add(order.productId));
             Object.keys(userProductGrants).forEach(productId => { if(userProductGrants[productId] === true) downloadableProductIds.add(productId); });
 
-            const downloadableProducts = Array.from(downloadableProductIds)
-                .map(id => allProducts.find(p => p.id === id))
-                .filter(Boolean);
+            const downloadableProducts = Array.from(downloadableProductIds).map(id => allProducts.find(p => p.id === id)).filter(Boolean);
 
             let content = `<div class="downloads-header"><div class="back-icon" onclick="goBack()">&#8592;</div><div class="header-title">My Downloads</div></div>`;
             content += '<div id="downloadsList">';
             if (downloadableProducts.length > 0) {
-                downloadableProducts.forEach(p => {
-                    content += `<div class="download-item"><img src="${p.coverImage}" alt="${p.title}"><div class="download-item-info"><h4>${p.title}</h4><a href="${p.downloadableFile}" class="download-link" style="padding: 8px 15px;" download>Download</a></div></div>`;
-                });
-            } else {
-                content += '<p style="text-align:center; padding: 20px;">You have no purchased or granted items.</p>';
-            }
+                downloadableProducts.forEach(p => { content += `<div class="download-item"><img src="${p.coverImage}" alt="${p.title}"><div class="download-item-info"><h4>${p.title}</h4><a href="${p.downloadableFile}" class="download-link" style="padding: 8px 15px;" download>Download</a></div></div>`; });
+            } else { content += '<p style="text-align:center; padding: 20px;">You have no purchased or granted items.</p>'; }
             content += '</div>';
             document.getElementById('downloadsScreen').innerHTML = content;
             showScreen('downloadsScreen');
@@ -332,64 +302,34 @@
             });
         }
 
-        function updateFileName(input) {
-            const fileNameDisplay = document.getElementById('fileNameDisplay');
-            if (input.files.length > 0) { fileNameDisplay.textContent = input.files[0].name; } 
-            else { fileNameDisplay.textContent = 'No file chosen'; }
-        }
-
-        const toBase64 = file => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
+        function updateFileName(input) { const fileNameDisplay = document.getElementById('fileNameDisplay'); if (input.files.length > 0) { fileNameDisplay.textContent = input.files[0].name; } else { fileNameDisplay.textContent = 'No file chosen'; } }
+        const toBase64 = file => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); });
 
         async function submitComplaint() {
             const user = auth.currentUser;
             if (!user) { return alert("Please login to submit a complaint."); }
-            
             const submitBtn = document.getElementById('complaintSubmitBtn');
             const type = document.getElementById('complaintType').value;
             const paymentId = document.getElementById('complaintPaymentId').value;
             const message = document.getElementById('complaintMessage').value;
             const file = document.getElementById('complaintImageFile').files[0];
-
             if (!type || !paymentId) { return alert("Please select a complaint type and enter a payment ID."); }
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
-            
+            submitBtn.disabled = true; submitBtn.textContent = 'Submitting...';
             try {
                 let imageBase64 = '';
-                if (file) {
-                    submitBtn.textContent = 'Processing Image...';
-                    imageBase64 = await toBase64(file);
-                }
-
+                if (file) { submitBtn.textContent = 'Processing Image...'; imageBase64 = await toBase64(file); }
                 const complaintData = { type, paymentId, message, imageBase64, userEmail: user.email, userId: user.uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
                 await db.ref('complaints').push(complaintData);
-                
                 const dialog = document.getElementById("dialogBox");
                 dialog.innerHTML = `<div class="modal-content"><h2>Complaint Submitted</h2><p>Apka complain ko verify Kiya jayega uske baad apka complain ko swikar kiya jayega.</p><div class="modal-buttons" style="margin-top: 25px;"><button class="btn-submit" onclick="goBack(); closeModal('dialogBox');">OK</button></div></div>`;
                 dialog.style.display = "flex";
                 document.getElementById('complaintForm').reset();
                 document.getElementById('fileNameDisplay').textContent = 'No file chosen';
-
-            } catch (error) {
-                console.error("Complaint submission failed:", error);
-                alert("An error occurred: " + error.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit Complaint';
-            }
+            } catch (error) { console.error("Complaint submission failed:", error); alert("An error occurred: " + error.message);
+            } finally { submitBtn.disabled = false; submitBtn.textContent = 'Submit Complaint'; }
         }
         
-        function shareProduct() {
-            const productUrl = `${window.location.origin}${window.location.pathname}?product=${currentProduct.id}`;
-            if (navigator.share) { navigator.share({ title: currentProduct.title, text: `Check out: ${currentProduct.title}`, url: productUrl }).catch(err => { if (err.name !== 'AbortError') console.error('Share failed:', err); }); } else { navigator.clipboard.writeText(productUrl).then(() => alert('Product link copied to clipboard!')); }
-        }
-        
+        function shareProduct() { const productUrl = `${window.location.origin}${window.location.pathname}?product=${currentProduct.id}`; if (navigator.share) { navigator.share({ title: currentProduct.title, text: `Check out: ${currentProduct.title}`, url: productUrl }).catch(err => { if (err.name !== 'AbortError') console.error('Share failed:', err); }); } else { navigator.clipboard.writeText(productUrl).then(() => alert('Product link copied to clipboard!')); } }
         function toggleSidebar() { const sidebar = document.getElementById("sidebar"); const overlay = document.getElementById("overlay"); const isVisible = sidebar.style.right === "0px"; sidebar.style.right = isVisible ? "-250px" : "0px"; overlay.style.display = isVisible ? "none" : "block"; }
         function showAuthModal() { toggleSidebar(); openAuthModal(); }
         function openAuthModal() { document.getElementById('authModal').style.display = 'flex'; }
@@ -416,7 +356,7 @@
         
         function logout() { auth.signOut().then(() => { userOrders = []; userProductGrants = {}; toggleSidebar(); }); }
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.style.display = 'none'); document.getElementById(id).style.display = 'block'; }
-        function goBack(){ history.pushState(null, '', window.location.pathname); showScreen('main-ui'); renderProducts(allProducts); }
+        function goBack(){ history.pushState(null, '', window.location.pathname); showScreen('main-ui'); }
         function closeModal(id){ document.getElementById(id).style.display="none"; }
         function closeDialog(){ closeModal("dialogBox"); showDetails(currentProduct.id); }
         function searchProducts() { const term = document.getElementById('searchInput').value.toUpperCase(); renderProducts(allProducts.filter(p => p.title.toUpperCase().includes(term))); }
