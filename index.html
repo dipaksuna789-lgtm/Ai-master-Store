@@ -250,7 +250,7 @@
         function startPayment() {
             const user = auth.currentUser;
             if (!user) return alert("Please login to continue.");
-            var options = { key: "rzp_live_wygJUJh3ZbUEUX", amount: currentProduct.price * 100, currency: "INR", name: "AI MASTER 2.0", description: "Payment for " + currentProduct.title, image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiFnLyOzDs8gngq68zI1_8u7SO4mfC9px6iu7PVw80j34_fn6nDMACws-JUTukEFycCzDtK8SX6re_Sm9glmmpSxHQTRFN-ErgTBRCpY-v1U77FgSv358Etg2sMa5wCyVRIpvAIpMisHyIm82ZWO8uNdOHyl6h41qz3QTirAA-aabErONcKxxUOvYDZRvE/s850/1000166545.png",
+            var options = { key: "rzp_live_RUtIeg7MZFUwzq", amount: currentProduct.price * 100, currency: "INR", name: "AI MASTER 2.0", description: "Payment for " + currentProduct.title, image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiFnLyOzDs8gngq68zI1_8u7SO4mfC9px6iu7PVw80j34_fn6nDMACws-JUTukEFycCzDtK8SX6re_Sm9glmmpSxHQTRFN-ErgTBRCpY-v1U77FgSv358Etg2sMa5wCyVRIpvAIpMisHyIm82ZWO8uNdOHyl6h41qz3QTirAA-aabErONcKxxUOvYDZRvE/s850/1000166545.png",
                 handler: function (response) {
                     db.ref("orders").push({ userId: user.uid, productId: currentProduct.id, productTitle: currentProduct.title, productCoverImage: currentProduct.coverImage, price: currentProduct.price, userEmail: user.email, paymentId: response.razorpay_payment_id, timestamp: firebase.database.ServerValue.TIMESTAMP
                     }).then(() => {
